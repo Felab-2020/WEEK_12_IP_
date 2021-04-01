@@ -1,0 +1,210 @@
+---
+output:
+  word_document: default
+  html_document: default
+  pdf_document: default
+---
+ 
+#1. Defining the question
+
+## 1.1 Specifying the data analytic objective
+
+Predict which individuals are most likely to click on ads from a cryptography course website
+
+
+## 1.2 Defining the metric of success
+
+For this study, we will perform conclusive Exploratory Data Analysis to enable us identify individuals who are most likely to click on ads
+
+## 1.3 Understanding the context
+
+A Kenyan entrepreneur has created an online cryptography course and would want to advertise it on her blog. She currently targets audiences originating from various countries. In the past, she ran ads to advertise a related course on the same blog and collected data in the process. Using the data previously collected, she is looking to do a study to identify which individuals are most likely to click on her ads. 
+
+## 1.4 Recording the Experimental Design
+
+1. Loading the data
+2. Checking the data
+3. Tidying the data
+4. Univariate Analysis
+5. Bivariate Analysis
+6. Challenging the solution
+7. Recommendations
+8. Follow up questions
+
+# 2. Loading the data set
+
+```{r}
+library(data.table)
+advert <- fread('http://bit.ly/IPAdvertisingData')
+advert
+
+```
+### Checking the data summary
+
+```{r}
+summary(advert)
+```
+
+From the data summary we get the measures of central tendency (median, mean, mode and quantile)
+
+### Checking the top and bottom columns
+
+```{r}
+tail(advert)
+```
+
+
+```{r}
+head(advert)
+```
+
+### Checking the class
+
+```{r}
+class(advert)
+```
+### Structure of the dataset
+
+```{r}
+str(advert)
+```
+
+#3. Cleaning the dataset
+
+##3.1 Finding missing values
+
+```{r}
+colSums(is.na(advert))
+```
+No missing data was found
+
+## 3.2 Checking for duplicates
+
+```{r}
+sum(duplicated(advert))
+```
+## 3.3 Checking for outliers
+
+```{r}
+# Area Income
+boxplot(advert$`Area Income`)
+```
+
+
+```{r}
+# Time spent on site
+boxplot(advert$`Daily Time Spent on Site`)
+```
+```{r}
+# Age
+boxplot(advert$Age)
+```
+```{r}
+# Daily internet usage
+boxplot(advert$`Daily Internet Usage`)
+```
+##3.4 Removing outliers
+
+
+```{r}
+outlier <- 47032 - 1.5 * IQR(advert$`Area Income`) 
+advert$`Area Income`[advert$`Area Income` < outlier]<- outlier
+
+boxplot(advert$`Area Income`)
+```
+
+
+We remove outliers by limiting extreme values in the statistical data to reduce the effect of possibly spurious outliers
+
+
+# 4. Exploratory Data Analysis
+
+## 4.1 Univariate Analysis
+
+```{r}
+# Age Frequency
+# fetching the age
+age <- advert$Age
+age_freq <- table(age)
+age_freq
+```
+
+```{r}
+# Creating a bar graph of age
+barplot(age_freq)
+```
+
+```{r}
+# Histogram for area income
+hist(advert$`Area Income`)
+```
+
+```{r}
+# Histogram for area income
+hist(advert$`Daily Internet Usage`)
+```
+
+
+```{r}
+# Histogram for Daily Time
+hist(advert$`Daily Time Spent on Site`)
+```
+
+```{r}
+# Gender Frequency
+# fetching the male column
+male_female <- advert$Male
+gender_freq <- table(male_female)
+gender_freq
+```
+
+
+```{r}
+# Creating a bar graph of age
+barplot(gender_freq)
+```
+
+```{r}
+# Clicked on Ad Frequency
+# fetching the Clicked on Ad
+Clicked.on.Ad <- advert$`Clicked on Ad`
+clicked_freq <- table(Clicked.on.Ad)
+clicked_freq
+```
+
+
+```{r}
+# Creating a bar graph of clicked on age
+barplot(clicked_freq)
+```
+
+## 4.2 Bivariate analysis
+
+Here we check for correlation between the different columns and the target variable Clicked on ad
+```{r}
+library(corrplot)
+advert_num <- Filter(is.numeric, advert)
+corrplot(cor(advert_num))
+
+```
+
+```{r}
+library(ggplot2)
+
+ggplot(data = advert, aes(x = Age, fill = 'Clicked on Ad' ))+
+    geom_histogram(bins = 27, color = 'pink') + 
+    labs(title = 'Age distribution with Ad clicks', x = 'Age', y = 'Frequency', fill = 'Clicked on Ad')
+```
+
+```{r}
+ggplot(data = advert, aes(x = Male, fill = 'Clicked on Ad'))+
+    geom_histogram(bins = 2, color = 'cyan') + 
+    labs(title = 'GENDER', x = 'GENDER', y = 'Frequency', fill = 'Clicked on Ad') +
+        scale_color_brewer(palette = 'Set1')
+```
+
+# Conclusion
+
+The ages between 26 and 42 record the highest frequency of ad clicks.
+The female gender had the highest number of clicks.
+
